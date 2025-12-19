@@ -35,11 +35,13 @@ Cjora.ServiceGovernance 是一个基于 .NET 的服务治理框架，支持 **�
     }
   }
 }
+```
 
 ---
 
 ## Program.cs 示例
 
+```csharp
 using Cjora.ServiceGovernance.Extensions;
 using Cjora.ServiceGovernance.Abstractions;
 
@@ -74,6 +76,7 @@ app.MapGet("/load-balance", async (IServiceDiscovery discovery, ILoadBalancer lo
 });
 
 app.Run();
+```
 
 ---
 
@@ -81,4 +84,4 @@ app.Run();
 
 ```bash
 dotnet add package Cjora.ServiceGovernance
-
+```
