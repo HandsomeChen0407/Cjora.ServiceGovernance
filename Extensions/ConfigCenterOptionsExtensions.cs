@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Cjora.ServiceGovernance.Abstractions;
-
-namespace Cjora.ServiceGovernance.Options;
+﻿namespace Cjora.ServiceGovernance.Options;
 
 /// <summary>
 /// ConfigCenter 与 IOptions 的集成扩展

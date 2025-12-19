@@ -9,7 +9,6 @@ public interface IServiceDiscovery
 {
     /// <summary>
     /// 获取指定服务的所有可用实例
-    /// 返回的实例需支持临时停用（Weight = 0 表示停用）
     /// </summary>
     Task<IReadOnlyList<ServiceInstance>> GetInstancesAsync(string serviceName, CancellationToken cancellationToken = default);
 }

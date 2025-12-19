@@ -1,6 +1,7 @@
 # Cjora.ServiceGovernance
 
-Cjora.ServiceGovernance 是一个基于 .NET 的服务治理框架，支持 **服务注册、发现、负载均衡、配置中心** 和 **HttpClient 服务调用的重试/熔断策略**。默认实现基于 **Consul**，可扩展支持 Nacos 等注册中心。
+Cjora.ServiceGovernance 是一个基于 .NET 的服务治理框架，支持 服务注册、发现、负载均衡、配置中心 以及 HttpClient 服务调用的重试 / 熔断策略。
+默认实现基于 Consul，并通过模块化机制支持扩展 Nacos / Etcd 等注册中心或配置中心。
 
 ---
 
@@ -39,6 +40,10 @@ dotnet add package Cjora.ServiceGovernance
       "RetryCount": 3,
       "CircuitBreakerFailures": 5,
       "CircuitBreakerSeconds": 30
+    },
+    "ConfigCenter": {
+      "Enabled": true,
+      "Type": "Consul"
     }
   }
 }
@@ -49,12 +54,16 @@ dotnet add package Cjora.ServiceGovernance
 ## Program.cs 示例
 
 ```csharp
+
 using Cjora.ServiceGovernance.Extensions;
 using Cjora.ServiceGovernance.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 注册服务治理（包含注册中心 + 配置中心）
 builder.Services.AddServiceGovernance(builder.Configuration);
+
+// 注册支持服务发现 + 重试 / 熔断的 HttpClient
 builder.Services.AddServiceDiscoveryHttpClient("MyClient");
 
 var app = builder.Build();
@@ -68,14 +77,18 @@ app.MapGet("/service-uri", async (IServiceGovernance governance) =>
 app.MapGet("/config", async (IConfigCenter configCenter) =>
 {
     string? value = await configCenter.GetConfigAsync("MyKey");
-    await configCenter.WatchConfigAsync("MyKey", newValue =>
-    {
-        Console.WriteLine($"配置更新: {newValue}");
-    });
+
+    await configCenter.WatchConfigAsync(
+        "MyKey",
+        e => Console.WriteLine($"配置更新: {e.Value}")
+    );
+
     return Results.Ok(value);
 });
 
-app.MapGet("/load-balance", async (IServiceDiscovery discovery, ILoadBalancer loadBalancer) =>
+app.MapGet("/load-balance", async (
+    IServiceDiscovery discovery,
+    ILoadBalancer loadBalancer) =>
 {
     var instances = await discovery.GetInstancesAsync("AnotherService");
     var selected = loadBalancer.Select(instances, "AnotherService");
@@ -83,6 +96,7 @@ app.MapGet("/load-balance", async (IServiceDiscovery discovery, ILoadBalancer lo
 });
 
 app.Run();
+
 ```
 ---
 
@@ -150,21 +164,32 @@ handle.Dispose();
 ```
 ---
 
-## 配置中心 Program.cs 实例
+## 配置中心 + Options（热更新）
 
 ```csharp
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 注册配置中心（Consul）
-builder.Services.AddSingleton<IConfigCenter, ConsulConfigCenter>();
+// 注册服务治理（内部已注册 ConfigCenter）
+builder.Services.AddServiceGovernance(builder.Configuration);
 
-// 注册 ConfigCenter Options（就在这里）
+// 注册基于配置中心的 Options
 builder.Services.AddConfigCenterOptions<RedisOptions>(
     key: "Redis",
     group: "default");
 
 var app = builder.Build();
 app.Run();
+
+public class DemoService
+{
+    public DemoService(IOptionsMonitor<RedisOptions> options)
+    {
+        options.OnChange(o =>
+        {
+            Console.WriteLine("Redis 配置更新：" + o.ConnectionString);
+        });
+    }
+}
 
 ```
