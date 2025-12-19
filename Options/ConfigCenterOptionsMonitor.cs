@@ -1,6 +1,4 @@
 ﻿using System.Text.Json;
-using Microsoft.Extensions.Options;
-using Cjora.ServiceGovernance.Abstractions;
 
 namespace Cjora.ServiceGovernance.Options;
 

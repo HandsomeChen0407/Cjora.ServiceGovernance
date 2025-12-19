@@ -9,6 +9,9 @@ public static class ServiceGovernanceSetup
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // 触发模块加载
+        LoadModules();
+
         services.Configure<ServiceGovernanceOptions>(
             configuration.GetSection("ServiceGovernance"));
 
@@ -48,11 +51,50 @@ public static class ServiceGovernanceSetup
         return services;
     }
 
-    // ===== 模块注册（框架内部） =====
+    // ===== 模块注册（内部） =====
 
     internal static void AddRegistryModule(IRegistryModule module)
         => _registryModules.Add(module);
 
     internal static void AddConfigCenterModule(IConfigCenterModule module)
         => _configCenterModules.Add(module);
+
+    // ===== ⭐ 模块扫描 =====
+
+    private static void LoadModules()
+    {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        foreach (var assembly in assemblies)
+        {
+            Type[] types;
+
+            try
+            {
+                types = assembly.GetTypes();
+            }
+            catch
+            {
+                continue;
+            }
+
+            foreach (var type in types)
+            {
+                if (type.IsAbstract || type.IsInterface)
+                    continue;
+
+                // 触发 RegistryModule 静态构造函数
+                if (typeof(IRegistryModule).IsAssignableFrom(type))
+                {
+                    _ = Activator.CreateInstance(type);
+                }
+
+                // 触发 ConfigCenterModule 静态构造函数
+                if (typeof(IConfigCenterModule).IsAssignableFrom(type))
+                {
+                    _ = Activator.CreateInstance(type);
+                }
+            }
+        }
+    }
 }
