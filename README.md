@@ -1,27 +1,27 @@
 # Cjora.ServiceGovernance
 
-Cjora.ServiceGovernance ÊÇÒ»¸ö»ùÓÚ .NET µÄ·şÎñÖÎÀí¿ò¼Ü£¬Ö§³Ö **·şÎñ×¢²á¡¢·¢ÏÖ¡¢¸ºÔØ¾ùºâ¡¢ÅäÖÃÖĞĞÄ** ºÍ **HttpClient ·şÎñµ÷ÓÃµÄÖØÊÔ/ÈÛ¶Ï²ßÂÔ**¡£Ä¬ÈÏÊµÏÖ»ùÓÚ **Consul**£¬¿ÉÀ©Õ¹Ö§³Ö Nacos µÈ×¢²áÖĞĞÄ¡£
+Cjora.ServiceGovernance æ˜¯ä¸€ä¸ªåŸºäº .NET çš„æœåŠ¡æ²»ç†æ¡†æ¶ï¼Œæ”¯æŒ **æœåŠ¡æ³¨å†Œã€å‘ç°ã€è´Ÿè½½å‡è¡¡ã€é…ç½®ä¸­å¿ƒ** å’Œ **HttpClient æœåŠ¡è°ƒç”¨çš„é‡è¯•/ç†”æ–­ç­–ç•¥**ã€‚é»˜è®¤å®ç°åŸºäº **Consul**ï¼Œå¯æ‰©å±•æ”¯æŒ Nacos ç­‰æ³¨å†Œä¸­å¿ƒã€‚
 
 ---
 
-## ¹¦ÄÜ
+## åŠŸèƒ½
 
-- **·şÎñ×¢²á**
-- **·şÎñ·¢ÏÖ**
-- **¸ºÔØ¾ùºâ**
-- **ÅäÖÃÖĞĞÄ**
-- **HttpClient À©Õ¹£¨ÖØÊÔ/ÈÛ¶Ï²ßÂÔ£©**
+- **æœåŠ¡æ³¨å†Œ**
+- **æœåŠ¡å‘ç°**
+- **è´Ÿè½½å‡è¡¡**
+- **é…ç½®ä¸­å¿ƒ**
+- **HttpClient æ‰©å±•ï¼ˆé‡è¯•/ç†”æ–­ç­–ç•¥ï¼‰**
 
 ---
 
-## °²×°
+## å®‰è£…
 
 ```bash
 dotnet add package Cjora.ServiceGovernance
 ```
 ---
 
-## ÅäÖÃÊµÀı
+## é…ç½®å®ä¾‹
 
 ```json
 {
@@ -46,7 +46,7 @@ dotnet add package Cjora.ServiceGovernance
 
 ---
 
-## Program.cs Ê¾Àı
+## Program.cs ç¤ºä¾‹
 
 ```csharp
 using Cjora.ServiceGovernance.Extensions;
@@ -70,7 +70,7 @@ app.MapGet("/config", async (IConfigCenter configCenter) =>
     string? value = await configCenter.GetConfigAsync("MyKey");
     await configCenter.WatchConfigAsync("MyKey", newValue =>
     {
-        Console.WriteLine($"ÅäÖÃ¸üĞÂ: {newValue}");
+        Console.WriteLine($"é…ç½®æ›´æ–°: {newValue}");
     });
     return Results.Ok(value);
 });
