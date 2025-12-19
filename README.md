@@ -16,6 +16,7 @@ Cjora.ServiceGovernance 是一个基于 .NET 的服务治理框架，支持 **�
 
 ## 配置实例
 
+```json
 {
   "ServiceGovernance": {
     "RegistryType": "Consul",
