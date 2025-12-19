@@ -44,6 +44,11 @@ public sealed class ServiceGovernanceOptions
     /// 服务熔断和重试策略配置
     /// </summary>
     public ResilienceOptions Resilience { get; set; } = new();
+
+    /// <summary>
+    /// 配置中心
+    /// </summary>
+    public ConfigCenterOptions ConfigCenter { get; set; } = new();
 }
 
 /// <summary>
@@ -76,4 +81,17 @@ public sealed class ResilienceOptions
     /// 熔断持续秒数
     /// </summary>
     public int CircuitBreakerSeconds { get; set; } = 30;
+}
+
+public class ConfigCenterOptions
+{
+    /// <summary>
+    /// 是否启用配置中心
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Consul / Nacos / Etcd
+    /// </summary>
+    public string Type { get; set; } = "Consul";
 }

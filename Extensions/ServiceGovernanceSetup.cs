@@ -1,40 +1,58 @@
 ﻿namespace Cjora.ServiceGovernance.Extensions;
 
-/// <summary>
-/// 服务治理依赖注入扩展
-/// </summary>
 public static class ServiceGovernanceSetup
 {
-    public static IServiceCollection AddServiceGovernance(this IServiceCollection services, IConfiguration configuration)
+    private static readonly List<IRegistryModule> _registryModules = new();
+    private static readonly List<IConfigCenterModule> _configCenterModules = new();
+
+    public static IServiceCollection AddServiceGovernance(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        services.Configure<ServiceGovernanceOptions>(configuration.GetSection("ServiceGovernance"));
+        services.Configure<ServiceGovernanceOptions>(
+            configuration.GetSection("ServiceGovernance"));
 
-        var options = configuration.GetSection("ServiceGovernance").Get<ServiceGovernanceOptions>()!;
+        var options = configuration
+            .GetSection("ServiceGovernance")
+            .Get<ServiceGovernanceOptions>()
+            ?? throw new InvalidOperationException("ServiceGovernance 配置缺失");
 
-        if (options.RegistryType.Equals("Consul", StringComparison.OrdinalIgnoreCase))
+        // ========= 注册中心 =========
+        var registryModule = _registryModules.FirstOrDefault(m =>
+            m.RegistryType.Equals(options.RegistryType, StringComparison.OrdinalIgnoreCase));
+
+        if (registryModule == null)
+            throw new NotSupportedException(
+                $"未注册注册中心模块：{options.RegistryType}");
+
+        registryModule.Register(services, options);
+
+        // ========= 配置中心 =========
+        if (options.ConfigCenter.Enabled)
         {
-            // 注册 Consul 客户端
-            services.AddSingleton<IConsulClient>(_ => new ConsulClient(c => c.Address = new Uri(options.RegistryAddress)));
+            var configModule = _configCenterModules.FirstOrDefault(m =>
+                m.Type.Equals(options.ConfigCenter.Type, StringComparison.OrdinalIgnoreCase));
 
-            // 注册服务注册和发现
-            services.AddSingleton<IServiceRegistry, ConsulServiceRegistry>();
-            services.AddSingleton<IServiceDiscovery, ConsulServiceDiscovery>();
-        }
-        else
-        {
-            throw new NotSupportedException("当前只支持 Consul，实现 Nacos 可以扩展");
+            if (configModule == null)
+                throw new NotSupportedException(
+                    $"未注册配置中心模块：{options.ConfigCenter.Type}");
+
+            configModule.Register(services, options);
         }
 
-        // 缓存服务发现
-        services.AddSingleton<IServiceDiscovery>(sp =>
-            new CachedServiceDiscovery(sp.GetRequiredService<IServiceDiscovery>(), sp.GetRequiredService<IOptions<ServiceGovernanceOptions>>()));
-
-        // 负载均衡
+        // ========= 通用能力 =========
+        services.AddHostedService<ServiceRegistryHostedService>();
         services.AddSingleton<ILoadBalancer, WeightedRoundRobinLoadBalancer>();
-
-        // 服务治理统一入口
         services.AddSingleton<IServiceGovernance, ServiceGovernanceService>();
 
         return services;
     }
+
+    // ===== 模块注册（框架内部） =====
+
+    internal static void AddRegistryModule(IRegistryModule module)
+        => _registryModules.Add(module);
+
+    internal static void AddConfigCenterModule(IConfigCenterModule module)
+        => _configCenterModules.Add(module);
 }

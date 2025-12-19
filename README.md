@@ -84,3 +84,87 @@ app.MapGet("/load-balance", async (IServiceDiscovery discovery, ILoadBalancer lo
 
 app.Run();
 ```
+---
+
+## 读取配置
+
+```csharp
+
+app.MapGet("/config/get", async (IConfigCenter configCenter) =>
+{
+    var value = await configCenter.GetConfigAsync(
+        key: "Redis:ConnectionString",
+        group: "default");
+
+    return Results.Ok(value);
+});
+
+```
+---
+
+## 写入配置
+
+```csharp
+
+await configCenter.SetConfigAsync(
+    key: "FeatureFlags:EnableNewUI",
+    value: "true",
+    group: "default");
+
+```
+---
+
+## 删除配置
+
+```csharp
+
+await configCenter.DeleteConfigAsync(
+    key: "FeatureFlags:EnableNewUI",
+    group: "default");
+
+```
+---
+
+## 配置监听
+
+```csharp
+
+var handle = await configCenter.WatchConfigAsync(
+    key: "Redis:ConnectionString",
+    onChanged: e =>
+    {
+        if (e.IsDeleted)
+        {
+            Console.WriteLine($"配置被删除: {e.Key}");
+        }
+        else
+        {
+            Console.WriteLine($"配置更新: {e.Key} = {e.Value}");
+        }
+    },
+    group: "default");
+
+// 应用关闭或不再需要时取消监听
+handle.Dispose();
+
+```
+---
+
+## 配置中心 Program.cs 实例
+
+```csharp
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 注册配置中心（Consul）
+builder.Services.AddSingleton<IConfigCenter, ConsulConfigCenter>();
+
+// 注册 ConfigCenter Options（就在这里）
+builder.Services.AddConfigCenterOptions<RedisOptions>(
+    key: "Redis",
+    group: "default");
+
+var app = builder.Build();
+app.Run();
+
+```

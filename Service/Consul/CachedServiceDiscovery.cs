@@ -1,40 +1,47 @@
 namespace Cjora.ServiceGovernance.Service;
 
 /// <summary>
-/// 缓存的服务发现
-/// 避免频繁调用 Consul/Nacos
+/// 带缓存的服务发现
+/// 
+/// 核心作用：
+/// - 所有业务请求 ≠ 所有请求打 Consul
+/// - 控制刷新频率
 /// </summary>
 public sealed class CachedServiceDiscovery : IServiceDiscovery
 {
     private readonly IServiceDiscovery _inner;
     private readonly int _cacheSeconds;
-    private readonly ConcurrentDictionary<string, (DateTimeOffset refreshAt, IReadOnlyList<ServiceInstance> instances)> _cache = new();
 
-    public CachedServiceDiscovery(IServiceDiscovery inner, IOptions<ServiceGovernanceOptions> options)
+    private readonly ConcurrentDictionary<string, CacheItem> _cache = new();
+
+    public CachedServiceDiscovery(
+        IServiceDiscovery inner,
+        IOptions<ServiceGovernanceOptions> options)
     {
-        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        if (options == null) throw new ArgumentNullException(nameof(options));
-        _cacheSeconds = options.Value?.Discovery?.CacheSeconds > 0 ? options.Value.Discovery.CacheSeconds : 10;
+        _inner = inner;
+        _cacheSeconds = Math.Max(5, options.Value.Discovery.CacheSeconds);
     }
 
-    /// <inheritdoc />
-    public async Task<IReadOnlyList<ServiceInstance>> GetInstancesAsync(string serviceName, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ServiceInstance>> GetInstancesAsync(
+        string serviceName,
+        CancellationToken ct = default)
     {
-        if (string.IsNullOrWhiteSpace(serviceName))
-            throw new ArgumentException("serviceName 不能为空", nameof(serviceName));
-
-        if (_cache.TryGetValue(serviceName, out var cached))
+        if (_cache.TryGetValue(serviceName, out var cached) &&
+            cached.ExpireAt > DateTimeOffset.UtcNow)
         {
-            if (DateTimeOffset.UtcNow < cached.refreshAt)
-            {
-                return cached.instances;
-            }
+            return cached.Instances;
         }
 
-        var instances = await _inner.GetInstancesAsync(serviceName, cancellationToken)
-                        ?? Array.Empty<ServiceInstance>();
+        var instances = await _inner.GetInstancesAsync(serviceName, ct);
 
-        _cache[serviceName] = (DateTimeOffset.UtcNow.AddSeconds(_cacheSeconds), instances);
+        _cache[serviceName] = new CacheItem(
+            instances,
+            DateTimeOffset.UtcNow.AddSeconds(_cacheSeconds));
+
         return instances;
     }
+
+    private sealed record CacheItem(
+        IReadOnlyList<ServiceInstance> Instances,
+        DateTimeOffset ExpireAt);
 }
