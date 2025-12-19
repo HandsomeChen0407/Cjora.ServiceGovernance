@@ -2,6 +2,7 @@ namespace Cjora.ServiceGovernance.Service;
 
 /// <summary>
 /// 基于 Consul KV 的配置中心实现
+/// 支持获取、监听、更新配置
 /// </summary>
 public sealed class ConsulConfigCenter : IConfigCenter
 {
@@ -63,5 +64,27 @@ public sealed class ConsulConfigCenter : IConfigCenter
         }, ct);
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 设置/更新配置
+    /// </summary>
+    /// <param name="key">配置 Key</param>
+    /// <param name="value">配置值</param>
+    /// <param name="ct">取消令牌</param>
+    public async Task SetConfigAsync(string key, string value, CancellationToken ct = default)
+    {
+        var kvPair = new KVPair(key)
+        {
+            Value = Encoding.UTF8.GetBytes(value)
+        };
+
+        var result = await _client.KV.Put(kvPair, ct);
+
+        if (!result.Response)
+            throw new Exception($"Failed to set config for key: {key}");
+
+        // 更新本地缓存
+        _cache[key] = value;
     }
 }

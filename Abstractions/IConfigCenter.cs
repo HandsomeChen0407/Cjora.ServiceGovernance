@@ -16,6 +16,15 @@ public interface IConfigCenter
     Task<string?> GetConfigAsync(string key, string? group = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// 设置配置
+    /// </summary>
+    /// <param name="key">配置 key</param>
+    /// <param name="value">配置值</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    /// <returns>配置值，如果不存在返回 null</returns>
+    Task SetConfigAsync(string key, string value, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// 监听配置变更（本地缓存自动刷新）
     /// </summary>
     /// <param name="key">配置 key</param>

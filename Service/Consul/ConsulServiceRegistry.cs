@@ -10,10 +10,10 @@ public sealed class ConsulServiceRegistry : IServiceRegistry
     private readonly IHostApplicationLifetime _lifetime;
     private string _serviceId = default!;
 
-    public ConsulServiceRegistry(IConsulClient client, ServiceGovernanceOptions options, IHostApplicationLifetime lifetime)
+    public ConsulServiceRegistry(IConsulClient client, IOptions<ServiceGovernanceOptions> options, IHostApplicationLifetime lifetime)
     {
         _client = client;
-        _options = options;
+        _options = options.Value;
         _lifetime = lifetime;
         _serviceId = $"{_options.ServiceName}_{Guid.NewGuid()}";
 
