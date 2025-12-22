@@ -1,4 +1,4 @@
-namespace Cjora.ServiceGovernance.Abstractions;
+namespace Cjora.ServiceGovernance.Interfaces;
 
 /// <summary>
 /// 服务发现抽象接口

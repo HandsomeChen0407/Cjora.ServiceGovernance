@@ -1,4 +1,4 @@
-namespace Cjora.ServiceGovernance.Abstractions;
+namespace Cjora.ServiceGovernance.Interfaces;
 
 /// <summary>
 /// 注册中心模块（插件化扩展点）

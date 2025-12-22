@@ -11,6 +11,6 @@ global using Consul;
 
 global using Cjora.ServiceGovernance.Options;
 global using Cjora.ServiceGovernance.Models;
-global using Cjora.ServiceGovernance.Abstractions;
+global using Cjora.ServiceGovernance.Interfaces;
 global using Cjora.ServiceGovernance.Service;
 global using Cjora.ServiceGovernance.Handlers;

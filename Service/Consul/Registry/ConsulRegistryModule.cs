@@ -1,5 +1,7 @@
 using Cjora.ServiceGovernance.Extensions;
 
+namespace Cjora.ServiceGovernance.Service;
+
 public sealed class ConsulRegistryModule : IRegistryModule
 {
     public string RegistryType => "Consul";

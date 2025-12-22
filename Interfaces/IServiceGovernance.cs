@@ -1,4 +1,4 @@
-namespace Cjora.ServiceGovernance.Abstractions;
+namespace Cjora.ServiceGovernance.Interfaces;
 
 /// <summary>
 /// 服务治理统一接口

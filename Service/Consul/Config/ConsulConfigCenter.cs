@@ -1,8 +1,3 @@
-using System.Collections.Concurrent;
-using System.Text;
-using Consul;
-using Cjora.ServiceGovernance.Abstractions;
-
 namespace Cjora.ServiceGovernance.Service;
 
 /// <summary>

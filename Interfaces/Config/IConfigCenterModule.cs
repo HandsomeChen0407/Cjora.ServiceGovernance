@@ -1,4 +1,4 @@
-namespace Cjora.ServiceGovernance.Abstractions;
+namespace Cjora.ServiceGovernance.Interfaces;
 
 /// <summary>
 /// 配置中心模块抽象

@@ -1,4 +1,3 @@
-using Cjora.ServiceGovernance.Abstractions;
 using Cjora.ServiceGovernance.Extensions;
 using Cjora.ServiceGovernance.Security;
 
