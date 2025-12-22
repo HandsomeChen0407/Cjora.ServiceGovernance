@@ -12,13 +12,11 @@ public static class ServiceGovernanceSetup
         // 触发模块加载
         LoadModules();
 
-        services.Configure<ServiceGovernanceOptions>(
-            configuration.GetSection("ServiceGovernance"));
-
-        var options = configuration
-            .GetSection("ServiceGovernance")
-            .Get<ServiceGovernanceOptions>()
-            ?? throw new InvalidOperationException("ServiceGovernance 配置缺失");
+        var section = configuration.GetSection("ServiceGovernance");
+        var options = section.Get<ServiceGovernanceOptions>();
+        if (options == null)
+            throw new ArgumentNullException("ServiceGovernance 配置缺失");
+        services.Configure<ServiceGovernanceOptions>(section);
 
         // ========= 注册中心 =========
         var registryModule = _registryModules.FirstOrDefault(m =>
