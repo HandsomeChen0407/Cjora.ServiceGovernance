@@ -1,23 +1,22 @@
 namespace Cjora.ServiceGovernance.Service;
 
 /// <summary>
-/// 加权轮询负载均衡实现
+/// 鍔犳潈杞璐熻浇鍧囪　瀹炵幇
 /// </summary>
 public sealed class WeightedRoundRobinLoadBalancer : ILoadBalancer
 {
     private readonly ConcurrentDictionary<string, int> _counters = new();
-    private static readonly Random _random = new();
 
     /// <inheritdoc />
     public ServiceInstance Select(IReadOnlyList<ServiceInstance> instances, string serviceName)
     {
         if (instances == null || !instances.Any())
-            throw new ArgumentException($"服务 {serviceName} 没有可用实例");
+            throw new ArgumentException($"鏈嶅姟 {serviceName} 娌℃湁鍙敤瀹炰緥");
 
-        // 构建加权列表
+        // 鏋勫缓鍔犳潈鍒楄〃
         var weightedList = instances.SelectMany(i => Enumerable.Repeat(i, Math.Max(i.Weight, 1))).ToList();
 
-        // 轮询选择
+        // 杞閫夋嫨
         var count = _counters.GetOrAdd(serviceName, 0);
         var selected = weightedList[count++ % weightedList.Count];
         _counters[serviceName] = count;

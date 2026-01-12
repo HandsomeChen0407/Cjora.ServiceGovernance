@@ -1,7 +1,7 @@
 using Cjora.ServiceGovernance.Extensions;
 using Cjora.ServiceGovernance.Security;
 
-namespace Cjora.ServiceGovernance.Consul;
+namespace Cjora.ServiceGovernance.Service;
 
 public sealed class ConsulConfigCenterModule : IConfigCenterModule
 {
